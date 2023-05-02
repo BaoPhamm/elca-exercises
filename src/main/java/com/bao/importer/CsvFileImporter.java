@@ -1,6 +1,5 @@
 package com.bao.importer;
 
-import com.bao.exception.NotSupportedFileExtensionException;
 import com.bao.model.Company;
 
 import java.io.IOException;
@@ -22,8 +21,9 @@ public class CsvFileImporter implements FileImporter {
         }
         return instance;
     }
+
     @Override
-    public List<Company> importFile(Path path) throws IOException, NotSupportedFileExtensionException {
+    public List<Company> importFile(Path path) throws IOException {
 
         System.out.println("Importing CSV file: " + path.getFileName());
         List<Company> companies = new ArrayList<>();
@@ -36,13 +36,19 @@ public class CsvFileImporter implements FileImporter {
             company.setId(Integer.valueOf(values[0]));
             company.setName(values[1]);
             company.setFoundationDate(values[2]);
-            company.setCapital(values[3]);
+            company.setCapital(Integer.valueOf(values[3]));
             company.setCountry(values[4]);
-            if(values.length == 6){
-                company.setHeadQuarter(Boolean.valueOf(values[5]));
+            if (values.length == 6) {
+                company.setHeadQuarter(convertToBoolean(values[5]));
+            } else {
+                company.setHeadQuarter(Boolean.FALSE);
             }
             companies.add(company);
         }
         return companies;
+    }
+
+    private Boolean convertToBoolean(String str) {
+        return str.equals("1") ? Boolean.TRUE : Boolean.FALSE;
     }
 }

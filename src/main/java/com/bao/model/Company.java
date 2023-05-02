@@ -4,7 +4,7 @@ public class Company {
     private Integer id;
     private String name;
     private String foundationDate;
-    private String capital;
+    private Integer capital;
     private String country;
     private Boolean isHeadQuarter;
 
@@ -21,7 +21,7 @@ public class Company {
         return foundationDate;
     }
 
-    public String getCapital() {
+    public Integer getCapital() {
         return capital;
     }
 
@@ -45,7 +45,7 @@ public class Company {
         this.foundationDate = foundationDate;
     }
 
-    public void setCapital(String capital) {
+    public void setCapital(Integer capital) {
         this.capital = capital;
     }
 

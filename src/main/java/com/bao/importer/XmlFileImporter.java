@@ -1,6 +1,5 @@
 package com.bao.importer;
 
-import com.bao.exception.NotSupportedFileExtensionException;
 import com.bao.model.Company;
 
 import java.nio.file.Path;
@@ -20,7 +19,7 @@ public class XmlFileImporter implements FileImporter {
     }
 
     @Override
-    public List<Company> importFile(Path path) throws NotSupportedFileExtensionException {
+    public List<Company> importFile(Path path) {
         // Implement XML file import logic
         System.out.println("Importing XML file: " + path.getFileName());
         return null;
