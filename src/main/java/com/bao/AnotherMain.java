@@ -5,16 +5,34 @@ import java.util.List;
 import java.util.Scanner;
 
 public class AnotherMain {
+    int i;
+
+    AnotherMain(int ii) {
+        i = ii;
+    }
+
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
 
-        System.out.print("Enter the first string: ");
-        String firstString = scanner.nextLine();
+//        AnotherMain x = new AnotherMain(7);
+//        AnotherMain y = x;
+//        System.out.println("x: "+ x.i);
+//        System.out.println("y: "+ y.i);
+//        System.out.println("i+++++");
+//        x.i++;
+//        System.out.println("x after: "+ x.i);
+//        System.out.println("y after: "+ y.i);
 
-        System.out.print("Enter the second string: ");
-        String secondString = scanner.nextLine();
+        ////
 
-        System.out.println("result same vowels pattern: "+sameVowelsPatternLongWord(firstString, secondString));
+//        Scanner scanner = new Scanner(System.in);
+//
+//        System.out.print("Enter the first string: ");
+//        String firstString = scanner.nextLine();
+//
+//        System.out.print("Enter the second string: ");
+//        String secondString = scanner.nextLine();
+//
+//        System.out.println("result same vowels pattern: " + sameVowelsPatternLongWord(firstString, secondString));
     }
 
     public static boolean sameVowelsPatternLongWord(String s1, String s2) {
@@ -30,7 +48,7 @@ public class AnotherMain {
                     || c == 'E'
                     || c == 'I'
                     || c == 'O'
-                    || c == 'U'){
+                    || c == 'U') {
                 returnList.add(c);
             }
         }
