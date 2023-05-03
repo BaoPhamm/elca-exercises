@@ -15,7 +15,7 @@ import java.nio.file.WatchService;
 import java.util.List;
 
 public class Main {
-    private static final String FILE_PATH = "src/main/resources/import/companies.csv";
+    private static final String FILE_PATH = "src/main/resources/import/companies_bigdata.csv";
     private static final String FOLDER_PATH = "src/main/resources/import";
 
     public static void main(String[] args) throws IOException {
@@ -89,7 +89,7 @@ public class Main {
             for (WatchEvent<?> event : key.pollEvents()) {
 
                 // Check if the event is for the "companies.csv" file
-                if (event.context().toString().equals("companies.csv")) {
+                if (event.context().toString().equals("companies_bigdata.csv")) {
                     System.out.println("companies.csv changed, reimporting....");
 
                     // Reimport the file
