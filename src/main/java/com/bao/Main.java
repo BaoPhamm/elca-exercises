@@ -55,7 +55,7 @@ public class Main {
         }
     }
 
-    // print total capital of headquarters located in “CH”
+    /* print total capital of headquarters located in “CH” */
     private static void printTotalCapitalOfHeadquartersLocatedInCH(List<Company> companies) {
         int totalCapital = companies.stream()
                 .filter(company -> company.getCountry().equals("CH")
@@ -65,7 +65,7 @@ public class Main {
         System.out.println("Total capital of headquarters located in CH: " + totalCapital);
     }
 
-    // name of companies that the country is in “CH”. The list is sorted descending by capital
+    /* name of companies that the country is in “CH”. The list is sorted descending by capital */
     private static void printNameOfCompaniesInCHSortedByCapitalDesc(List<Company> companies) {
         System.out.println("Name of companies that the country is in CH (sorted descending by capital): ");
         companies.stream()
