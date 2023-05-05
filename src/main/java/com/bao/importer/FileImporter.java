@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface FileImporter {
     List<Company> importFile(Path path) throws IOException;
+    Integer getTotalCapitalOfHeadquartersLocatedInCH(Path path) throws IOException;
 }

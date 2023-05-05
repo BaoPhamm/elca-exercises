@@ -2,11 +2,13 @@ package com.bao.importer;
 
 import com.bao.model.Company;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class CsvFileImporter implements FileImporter {
 
@@ -46,6 +48,26 @@ public class CsvFileImporter implements FileImporter {
             companies.add(company);
         }
         return companies;
+    }
+
+    @Override
+    public Integer getTotalCapitalOfHeadquartersLocatedInCH(Path path) throws IOException {
+        int totalCapital = 0;
+
+        try (FileInputStream inputStream = new FileInputStream(path.toFile());
+             Scanner sc = new Scanner(inputStream, "UTF-8")) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                String[] values = line.split(",");
+                if (values[4].equals("CH") && (values.length == 6) && (values[5].equals("1"))) {
+                    totalCapital += Integer.valueOf(values[3]);
+                }
+            }
+            if (sc.ioException() != null) {
+                throw sc.ioException();
+            }
+        }
+        return totalCapital;
     }
 
     private Boolean convertToBoolean(String str) {

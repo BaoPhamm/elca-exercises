@@ -25,8 +25,10 @@ public class Main {
         try {
             companies = importFile(FILE_PATH);
             printTotalCapitalOfHeadquartersLocatedInCH(companies);
-            printNameOfCompaniesInCHSortedByCapitalDesc(companies);
+            printTotalCapitalOfHeadquartersLocatedInCHBigData(FILE_PATH);
+//            printNameOfCompaniesInCHSortedByCapitalDesc(companies);
             monitorFolderImport(FOLDER_PATH);
+
 
         } catch (IOException e) {
             System.out.println("Failed to import file: " + e.getMessage());
@@ -37,8 +39,8 @@ public class Main {
         }
     }
 
-    private static List<Company> importFile(String file) throws IOException {
-        Path filePath = Paths.get(FILE_PATH);
+    private static List<Company> importFile(String path) throws IOException {
+        Path filePath = Paths.get(path);
         String extension = getFileExtension(filePath);
 
         FileImporter fileImporter = ImporterFactory.getImporter(extension);
@@ -63,6 +65,15 @@ public class Main {
                 .map(Company::getCapital)
                 .reduce(0, Integer::sum);
         System.out.println("Total capital of headquarters located in CH: " + totalCapital);
+    }
+
+    private static void printTotalCapitalOfHeadquartersLocatedInCHBigData(String path) throws IOException {
+        Path filePath = Paths.get(path);
+        String extension = getFileExtension(filePath);
+
+        FileImporter fileImporter = ImporterFactory.getImporter(extension);
+        System.out.println("Total capital of headquarters located in CH: " +
+                fileImporter.getTotalCapitalOfHeadquartersLocatedInCH(filePath));
     }
 
     /* name of companies that the country is in “CH”. The list is sorted descending by capital */
