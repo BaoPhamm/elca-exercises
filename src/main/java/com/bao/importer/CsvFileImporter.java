@@ -4,6 +4,7 @@ import com.bao.model.Company;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class CsvFileImporter implements FileImporter {
         int totalCapital = 0;
 
         try (FileInputStream inputStream = new FileInputStream(path.toFile());
-             Scanner sc = new Scanner(inputStream, "UTF-8")) {
+                Scanner sc = new Scanner(inputStream, StandardCharsets.UTF_8)) {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
                 String[] values = line.split(",");

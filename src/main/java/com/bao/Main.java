@@ -15,18 +15,19 @@ import java.nio.file.WatchService;
 import java.util.List;
 
 public class Main {
-    private static final String FILE_PATH = "src/main/resources/import/companies_bigdata.csv";
+    private static final String FILE_PATH = "src/main/resources/import/companies.csvv";
+    //    private static final String FILE_PATH = "src/main/resources/import/companies_bigdata.csv";
     private static final String FOLDER_PATH = "src/main/resources/import";
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         List<Company> companies;
 
         try {
             companies = importFile(FILE_PATH);
             printTotalCapitalOfHeadquartersLocatedInCH(companies);
-            printTotalCapitalOfHeadquartersLocatedInCHBigData(FILE_PATH);
-//            printNameOfCompaniesInCHSortedByCapitalDesc(companies);
+//            printTotalCapitalOfHeadquartersLocatedInCHBigData(FILE_PATH);
+            printNameOfCompaniesInCHSortedByCapitalDesc(companies);
             monitorFolderImport(FOLDER_PATH);
 
 
@@ -36,6 +37,7 @@ public class Main {
         } catch (InterruptedException e) {
             System.out.println("InterruptedException: " + e.getMessage());
             e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
     }
 
