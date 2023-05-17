@@ -16,6 +16,7 @@ import java.nio.file.WatchService;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -36,16 +37,21 @@ public class Main {
         Predicate<Company> predicateIsHeadQuarter = Company::getHeadQuarter;
         Comparator<Company> comparatorCapitalDesc = Comparator.comparing(Company::getCapital).reversed();
 
-        try (Stream<Company> companiesStream = importFile(filePath)) {
+        Supplier<Stream<Company>> companiesSupplier = () -> {
+            try {
+                return importFile(filePath);
+            } catch (IOException e) {
+                logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
+                return Stream.empty();
+            }
+        };
+
+        try (Stream<Company> companiesStream = companiesSupplier.get()) {
             printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
-        } catch (IOException e) {
-            logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
         }
 
-        try (Stream<Company> secondCompaniesStream = importFile(filePath)) {
+        try (Stream<Company> secondCompaniesStream = companiesSupplier.get()) {
             printNameOfCompaniesInCountry(secondCompaniesStream, country, predicateCountry, comparatorCapitalDesc);
-        } catch (IOException e) {
-            logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
         }
 
         Thread monitorThread = new Thread(() -> {
@@ -129,16 +135,19 @@ public class Main {
                     System.out.println(filename + " changed, reimporting....");
 
                     // Reimport the file
-                    try (Stream<Company> companiesStream = importFile(filePath)) {
+                    Supplier<Stream<Company>> companiesSupplier = () -> {
+                        try {
+                            return importFile(filePath);
+                        } catch (IOException e) {
+                            logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
+                            return Stream.empty();
+                        }
+                    };
+                    try (Stream<Company> companiesStream = companiesSupplier.get()) {
                         printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
-                    } catch (IOException e) {
-                        logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
                     }
-
-                    try (Stream<Company> secondCompaniesStream = importFile(filePath)) {
+                    try (Stream<Company> secondCompaniesStream = companiesSupplier.get()) {
                         printNameOfCompaniesInCountry(secondCompaniesStream, country, predicateCountry, comparatorCapitalDesc);
-                    } catch (IOException e) {
-                        logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
                     }
                 }
             }
