@@ -14,14 +14,15 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 public class Main {
 
     private static final Logger logger = Logger.getLogger(Main.class.getName());
+    private static final String FAILED_TO_IMPORT_FILE_MSG = "Failed to import file: ";
 
     public static void main(String[] args) {
         if (args.length < 2) {
@@ -31,32 +32,41 @@ public class Main {
 
         String filePath = args[0];
         String country = args[1];
-        List<Company> companies;
         Predicate<Company> predicateCountry = company -> country.equals(company.getCountry());
         Predicate<Company> predicateIsHeadQuarter = Company::getHeadQuarter;
-        Comparator<Company> comparatorCapitalDesc = (o1, o2) -> o2.getCapital().compareTo(o1.getCapital());
+        Comparator<Company> comparatorCapitalDesc = Comparator.comparing(Company::getCapital).reversed();
 
-        try {
-            companies = importFile(filePath);
-            printTotalCapitalOfHeadquartersLocatedInCountry(companies, country, predicateCountry.and(predicateIsHeadQuarter));
-            printNameOfCompaniesInCountry(companies, country, predicateCountry, comparatorCapitalDesc);
-            monitorFolderImport(filePath, country, predicateCountry, predicateIsHeadQuarter, comparatorCapitalDesc);
+        try (Stream<Company> companiesStream = importFile(filePath)) {
+            printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
 
         } catch (IOException e) {
-            logger.severe("Failed to import file: " + e.getMessage());
-        } catch (InterruptedException e) {
-            logger.severe("InterruptedException: " + e.getMessage());
-            Thread.currentThread().interrupt();
+            logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
         }
+
+        try (Stream<Company> secondCompaniesStream = importFile(filePath)) {
+            printNameOfCompaniesInCountry(secondCompaniesStream, country, predicateCountry, comparatorCapitalDesc);
+        } catch (IOException e) {
+            logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
+        }
+
+        Thread monitorThread = new Thread(() -> {
+            try {
+                monitorFolderImport(filePath, country, predicateCountry, predicateIsHeadQuarter, comparatorCapitalDesc);
+            } catch (InterruptedException | IOException e) {
+                logger.severe("InterruptedException: " + e.getMessage());
+                Thread.currentThread().interrupt();
+            }
+        });
+        monitorThread.start();
     }
 
-    private static List<Company> importFile(String path) throws IOException {
+    private static Stream<Company> importFile(String path) throws IOException {
         Path filePath = Paths.get(path);
         String extension = getFileExtension(filePath)
                 .orElseThrow(() -> new NotSupportedFileExtensionException("Unsupported file extension."));
 
         FileImporter fileImporter = ImporterFactory.getImporter(extension);
-        return fileImporter.importFile(filePath);
+        return fileImporter.importFileAsTream(filePath);
     }
 
     private static Optional<String> getFileExtension(Path path) {
@@ -70,27 +80,31 @@ public class Main {
     }
 
     /* print total capital of headquarters located in “CH” */
-    private static void printTotalCapitalOfHeadquartersLocatedInCountry(List<Company> companies,
+    private static void printTotalCapitalOfHeadquartersLocatedInCountry(Stream<Company> companies,
                                                                         String country,
                                                                         Predicate<Company> predicate) {
-        int totalCapital = companies.stream()
+        logMemoryUsage("Before printTotalCapitalOfHeadquartersLocatedInCountry");
+        int totalCapital = companies
                 .filter(predicate)
                 .map(Company::getCapital)
                 .reduce(0, Integer::sum);
         System.out.println("Total capital of headquarters located in " + country + ": " + totalCapital);
+        logMemoryUsage("After printTotalCapitalOfHeadquartersLocatedInCountry");
     }
 
     /* name of companies that the country is in “CH”. The list is sorted descending by capital */
-    private static void printNameOfCompaniesInCountry(List<Company> companies,
+    private static void printNameOfCompaniesInCountry(Stream<Company> companies,
                                                       String country,
                                                       Predicate<Company> predicate,
                                                       Comparator<Company> comparatorCapitalDesc) {
+        logMemoryUsage("Before printNameOfCompaniesInCountry");
         System.out.println("Name of companies that the country is in " + country + ":");
-        companies.stream()
+        companies
                 .filter(predicate)
                 .sorted(comparatorCapitalDesc)
                 .map(Company::getName)
                 .forEach(System.out::println);
+        logMemoryUsage("After printNameOfCompaniesInCountry");
     }
 
     private static void monitorFolderImport(String filePath,
@@ -98,7 +112,6 @@ public class Main {
                                             Predicate<Company> predicateCountry,
                                             Predicate<Company> predicateIsHeadQuarter,
                                             Comparator<Company> comparatorCapitalDesc) throws IOException, InterruptedException {
-        List<Company> companies;
         Path path = Paths.get(filePath);
         Path folderPath = path.getParent();
         String filename = path.getFileName().toString();
@@ -117,14 +130,32 @@ public class Main {
                     System.out.println(filename + " changed, reimporting....");
 
                     // Reimport the file
-                    companies = importFile(filePath);
-                    printTotalCapitalOfHeadquartersLocatedInCountry(companies, country, predicateCountry.and(predicateIsHeadQuarter));
-                    printNameOfCompaniesInCountry(companies, country, predicateCountry, comparatorCapitalDesc);
+                    try (Stream<Company> companiesStream = importFile(filePath)) {
+                        printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
+
+                    } catch (IOException e) {
+                        logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
+                    }
+
+                    try (Stream<Company> secondCompaniesStream = importFile(filePath)) {
+                        printNameOfCompaniesInCountry(secondCompaniesStream, country, predicateCountry, comparatorCapitalDesc);
+                    } catch (IOException e) {
+                        logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
+                    }
                 }
             }
             // Reset the key and continue processing events
             key.reset();
         }
+    }
+
+    private static void logMemoryUsage(String message) {
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+
+        logger.info(message + ": Used Memory = " + usedMemory + " bytes");
     }
 
 }

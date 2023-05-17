@@ -5,6 +5,7 @@ import com.bao.model.Company;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class XmlFileImporter implements FileImporter {
     private static XmlFileImporter instance;
@@ -27,7 +28,7 @@ public class XmlFileImporter implements FileImporter {
     }
 
     @Override
-    public Integer getTotalCapitalOfHeadquartersLocatedInCH(Path path) throws IOException {
+    public Stream<Company> importFileAsTream(Path path) throws IOException {
         return null;
     }
 }

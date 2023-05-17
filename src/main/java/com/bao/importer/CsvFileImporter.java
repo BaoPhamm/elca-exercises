@@ -2,14 +2,13 @@ package com.bao.importer;
 
 import com.bao.model.Company;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Stream;
 
 public class CsvFileImporter implements FileImporter {
 
@@ -34,41 +33,33 @@ public class CsvFileImporter implements FileImporter {
 
         for (int i = 1; i < lines.size(); i++) {
             String line = lines.get(i);
-            String[] values = line.split(",");
-            Company company = new Company();
-            company.setId(Integer.valueOf(values[0]));
-            company.setName(values[1]);
-            company.setFoundationDate(values[2]);
-            company.setCapital(Integer.valueOf(values[3]));
-            company.setCountry(values[4]);
-            if (values.length == 6) {
-                company.setHeadQuarter(convertToBoolean(values[5]));
-            } else {
-                company.setHeadQuarter(Boolean.FALSE);
-            }
+            Company company = mapLineToCompany(line);
             companies.add(company);
         }
         return companies;
     }
 
     @Override
-    public Integer getTotalCapitalOfHeadquartersLocatedInCH(Path path) throws IOException {
-        int totalCapital = 0;
+    public Stream<Company> importFileAsTream(Path path) throws IOException {
+        System.out.println("Importing CSV file: " + path.getFileName());
+        return Files.lines(path, StandardCharsets.UTF_8)
+                .skip(1).map(this::mapLineToCompany);
+    }
 
-        try (FileInputStream inputStream = new FileInputStream(path.toFile());
-                Scanner sc = new Scanner(inputStream, StandardCharsets.UTF_8)) {
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine();
-                String[] values = line.split(",");
-                if (values[4].equals("CH") && (values.length == 6) && (values[5].equals("1"))) {
-                    totalCapital += Integer.valueOf(values[3]);
-                }
-            }
-            if (sc.ioException() != null) {
-                throw sc.ioException();
-            }
+    private Company mapLineToCompany(String line) {
+        String[] values = line.split(",");
+        Company company = new Company();
+        company.setId(Integer.valueOf(values[0]));
+        company.setName(values[1]);
+        company.setFoundationDate(values[2]);
+        company.setCapital(Integer.valueOf(values[3]));
+        company.setCountry(values[4]);
+        if (values.length == 6) {
+            company.setHeadQuarter(convertToBoolean(values[5]));
+        } else {
+            company.setHeadQuarter(Boolean.FALSE);
         }
-        return totalCapital;
+        return company;
     }
 
     private Boolean convertToBoolean(String str) {
