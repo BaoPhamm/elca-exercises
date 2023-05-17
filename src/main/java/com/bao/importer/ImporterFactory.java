@@ -10,7 +10,7 @@ public class ImporterFactory {
             case "xml":
                 return XmlFileImporter.getInstance();
             default:
-                throw new NotSupportedFileExtensionException("Unsupported file extension.");
+                throw new NotSupportedFileExtensionException(fileExtension);
         }
     }
 }

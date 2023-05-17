@@ -38,7 +38,6 @@ public class Main {
 
         try (Stream<Company> companiesStream = importFile(filePath)) {
             printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
-
         } catch (IOException e) {
             logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
         }
@@ -63,7 +62,7 @@ public class Main {
     private static Stream<Company> importFile(String path) throws IOException {
         Path filePath = Paths.get(path);
         String extension = getFileExtension(filePath)
-                .orElseThrow(() -> new NotSupportedFileExtensionException("Unsupported file extension."));
+                .orElseThrow(() -> new NotSupportedFileExtensionException(""));
 
         FileImporter fileImporter = ImporterFactory.getImporter(extension);
         return fileImporter.importFileAsTream(filePath);
@@ -132,7 +131,6 @@ public class Main {
                     // Reimport the file
                     try (Stream<Company> companiesStream = importFile(filePath)) {
                         printTotalCapitalOfHeadquartersLocatedInCountry(companiesStream, country, predicateCountry.and(predicateIsHeadQuarter));
-
                     } catch (IOException e) {
                         logger.severe(FAILED_TO_IMPORT_FILE_MSG + e.getMessage());
                     }

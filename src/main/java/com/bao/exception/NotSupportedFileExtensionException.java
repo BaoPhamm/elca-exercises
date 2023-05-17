@@ -3,7 +3,14 @@ package com.bao.exception;
 import java.io.IOException;
 
 public class NotSupportedFileExtensionException extends IOException {
-    public NotSupportedFileExtensionException(String message) {
-        super(message);
+    private final String fileExtension;
+
+    public NotSupportedFileExtensionException(String fileExtension) {
+        super("Unsupported file extension: " + fileExtension);
+        this.fileExtension = fileExtension;
+    }
+
+    public String getFileExtension() {
+        return fileExtension;
     }
 }
